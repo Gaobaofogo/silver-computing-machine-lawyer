@@ -1,0 +1,42 @@
+version: "3.9"
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: judis
+      POSTGRES_PASSWORD: judisdev
+      POSTGRES_DB: judis_adv
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U judis"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: ./apps/api
+    environment:
+      DATABASE_URL: postgresql+psycopg2://judis:judisdev@db:5432/judis_adv
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./apps/api/src:/app/src
+    depends_on:
+      db:
+        condition: service_healthy
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
+
+  web:
+    build: ./apps/web
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./apps/web/src:/app/src
+      - ./apps/web/public:/app/public
+    command: npm run dev -- --host 0.0.0.0
+
+volumes:
+  postgres_data:
