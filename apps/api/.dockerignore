@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.coverage
+.pytest_cache/
+.mypy_cache/
+.git/
+.git
+*.md
+.env
+.venv/
+venv/
+.env.*
+Dockerfile
