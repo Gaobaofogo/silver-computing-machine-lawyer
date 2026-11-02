@@ -1,6 +1,7 @@
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_validator, ConfigDict
 
 class ClienteSchema(BaseModel):
+    model_config = ConfigDict(extra="forbid")  # ADR-0001: rejeita CNPJ removido
     nome: str
     cpf: str
     estado_civil: str
