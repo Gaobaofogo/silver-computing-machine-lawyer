@@ -103,6 +103,18 @@ Nota: `frontend-skills/react-patterns` trata Server/Client Components; nao trata
 
 ---
 
+## 2.5 Entidade Cliente (domínio) vs Componente CadastroCliente (UI)
+
+Referencia: `GLOSSARY.md` (Cliente = PF sempre, `CPF` obrigatório, `EstadoCivil`, `Observacoes` LGPD, `ADR-0001`); `AGENTS.md`.
+
+- **Entidade `Cliente` (domínio, não componente)**: `nome` (str), `cpf` (str, regex `^(\d{3}\.\d{3}\.\d{3}-\d{2})$`), `estado_civil` (str, enum: Solteiro / Casado / Divorciado / Viúvo), `observacoes` (str, opcional, LGPD sensível, não expor em log/retorno sem máscara). Sempre PF (`CNPJ` removido).
+- **Componente `CadastroCliente`**: componente React que implementa a entrada da entidade `Cliente`. Nome do arquivo técnico em inglês (`ClientForm.tsx` ou `CadastroCliente.tsx` conforme convenção). O componente referencia a entidade, não substitui.
+- **Regra para agentes**: ao implementar `Cliente`, use a entidade `ClienteSchema` / `Cliente` (backend) e o componente `CadastroCliente` (frontend) como formulários separados; não confundir os nomes.
+- **Enums obrigatórios para `EstadoCivil`**: `Solteiro`, `Casado`, `Divorciado`, `Viúvo`.
+- **Campo `Observacoes`** (`Observa`): campo livre associado; deve ser tratado com cautela LGPD; mascarar/ocultar em logs e respostas públicas.
+
+---
+
 ## 3. Design Tokens e Padroes Visuais
 
 Baseado em `baseline-ui`; nao inventar paleta nova sem decisao de ADR.

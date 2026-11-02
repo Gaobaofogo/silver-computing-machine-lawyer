@@ -77,6 +77,17 @@ Implementacao: criar `utils/lgpd_mask.py` com `mask_cpf()`, `mask_cnpj()`, `mask
 
 ---
 
+## 2.6 Entidade Cliente — referencia completa (ADR-0001 + GLOSSARY.md)
+
+Referencia: `GLOSSARY.md` (linha 5: Cliente = PF; linha 15: EstadoCivil; linha 21: Observacoes; linha 19: CPF/CNPJ LGPD), `ADR-0001`.
+
+- **Campos obrigatorios**: `nome` (str); `cpf` (str, regex `^(\d{3}\.\d{3}\.\d{3}-\d{2})$`, LGPD sensível, mascarado no retorno); `estado_civil` (str, enum: Solteiro / Casado / Divorciado / Viúvo).
+- **Campo opcional LGPD**: `observacoes` (`Observa`) — campo livre associado a Cliente; sensível; mascarar em log/erro; nao expor sem mascara.
+- **Removido**: `cnpj` nao existe em `Cliente` (`extra="forbid"` no `ClienteSchema`).
+- **Distincao**: `Cliente` (entidade de domínio) vs `CadastroCliente` (componente/formulário de entrada); nao confundir nomes em tickets ou specs.
+
+---
+
 ## 3.4 Auth/Access-Control Seam
 
 Referencia: `fastapi`, `fastapi-python`, `python-patterns` (guard clauses).
