@@ -38,9 +38,9 @@ def criar_cliente(cliente: ClienteSchema = Depends(validar_cliente_pf)):
     return{"status":"criado","cliente":resp}
 
 # Rotas Cliente
-@app.get("/clientes/{cpf}")
-def consultar_cliente(cpf: str):
-    return {"status":"consultado","cliente":{"cpf":mascara_cpf(cpf)}}
+@app.get("/clientes/{id}")
+def consultar_cliente(id: int):
+    return {"status":"consultado","cliente":{"id":id,"cpf":"***.***.***-**"}}
 
 @app.put("/clientes")
 def atualizar_cliente(cliente: ClienteSchema = Depends(validar_cliente_pf)):
