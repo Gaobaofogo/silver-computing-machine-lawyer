@@ -9,6 +9,7 @@ class ClienteSchema(BaseModel):
     nome: str
     cpf: str
     estado_civil: str
+    observacoes: str | None = None
 
     @field_validator("cpf")
     @classmethod

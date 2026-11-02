@@ -8,7 +8,11 @@ export const CadastroCliente: React.FC = () => {
       <label htmlFor="cpf">CPF</label>
       <input id="cpf" name="cpf" aria-required="true" aria-label="CPF do Cliente" maxLength={14} placeholder="000.000.000-00" />
       <label htmlFor="estado_civil">Estado Civil</label>
+      <label htmlFor="observacoes">Observações (privado)</label>
+      <textarea id="observacoes" name="observacoes" aria-label="Observações do Cliente (sensível LGPD)" placeholder="Registro interno — não expor" />
       <select id="estado_civil" name="estado_civil" aria-required="true" aria-label="Estado Civil do Cliente">
+      <label htmlFor="observacoes">Observações (privado)</label>
+      <textarea id="observacoes" name="observacoes" aria-label="Observações do Cliente (sensível LGPD)" placeholder="Registro interno — não expor" />
         <option value="">Selecione</option>
         <option value="Solteiro">Solteiro</option>
         <option value="Casado">Casado</option>

@@ -7,3 +7,4 @@ class Cliente(SQLModel, table=True):
     nome: str
     cpf: str = Field(index=True)
     estado_civil: str
+    observacoes: str | None = None
