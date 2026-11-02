@@ -81,6 +81,18 @@ Essas são as skills base, extraídas do repositório `mattpocock/skills`. Elas 
 - `docker-project-foundations` — Dockerização de projeto (Dockerfile, compose.yaml, .dockerignore).
 - `docker-best-practices` — boas práticas de Docker.
 
+### Issue tracker
+
+GitHub Issues no repositório `Gaobaofogo/silver-computing-machine-lawyer`. Veja `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Cinco rótulos canônicos (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`). Veja `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context (um `GLOSSARY.md` + `docs/adr/` na raiz). Veja `docs/agents/domain.md`.
+
 ---
 
 ## Issue Tracker
