@@ -244,6 +244,7 @@ Referencia: `frontend-skills/baseline-ui`, `baseline-ui` (design tokens, composi
 
 - Comentarios de componente devem apontar para `react-patterns` (hooks discipline, Server/Client boundaries).
 - Testes de componente: `React Testing Library`; cobrir fluxo de cadastro de Cliente com CPF valido + CPF invalido.
+- **Nao `assert True` vazio**: cada teste deve validar comportamento real (`toBeInTheDocument`, `toHaveTextContent`, `getByRole`); `expect(...).toBe(true)` sem verificação e falha.
 - Design tokens: consultar `baseline-ui`; nao criar nova paleta sem ADR.
 
 ---

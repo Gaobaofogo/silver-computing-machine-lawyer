@@ -222,6 +222,7 @@ Cobertura mínima esperada: 80% nos módulos de domínio backend.
 **Todas as features devem ser validadas por testes antes do código ser aceito.**
 
 - **Antes de implementar**: a feature deve ter testes criados que definam o comportamento esperado (red-green-refactor).
+- **Proibido `assert True` vazio**: testes devem validar comportamento real (status_code, json, valor, erro esperado); `assert True` sem verificação é considerado falha.
 - **O código gerado só é considerado completo** quando os testes passam e validam o requisito.
 - **Se o código for refatorado** (refatoração de estrutura, otimização, limpeza de código): os testes devem ser atualizados imediatamente para garantir que continuam refletindo o pleno funcionamento do sistema. Nenhuma refatoração pode ser considerada concluída sem a verificação dos testes correspondentes.
 - **Em caso de falha de testes após refatoração**: reverta a alteração até que os testes estejam alinhados e passando novamente.

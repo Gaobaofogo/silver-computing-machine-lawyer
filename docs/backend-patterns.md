@@ -215,6 +215,7 @@ Baseado em `python-testing-patterns` e `tdd`.
 
 ### 6.1 Estrutura de teste
 
+- **Nao `assert True` vazio**: cada caso deve validar comportamento real (`status_code`, `json`, `ValueError`, `mascara`). `assert True` sem verificação e falha.
 - **AAA**: Arrange-Act-Assert.
 - **Seams**: testar apenas interfaces publicas (endpoints, schemas), nao implementacao interna.
 - **Fixtures**: `client` (FastAPI TestClient), `db_session`, `cliente_pf` (objeto de exemplo valido com CPF + EstadoCivil).
