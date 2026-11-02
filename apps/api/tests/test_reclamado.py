@@ -1,6 +1,12 @@
 import pytest
 
 from apps.api.src.schemas.reclamado import ReclamadoSchema
+from apps.api.src.models.reclamado import Reclamado
+
+def test_modelo_reclamado_sqlmodel():
+    r = Reclamado(tipo="pf", cpf="411.133.456-70", razao="João Silva")
+    assert r.tipo == "pf"
+    assert r.cpf == "411.133.456-70"
 
 def test_reclamado_pf_com_cpf():
     r = ReclamadoSchema(tipo="pf", cpf="411.133.456-70", estado_civil="Casado")
