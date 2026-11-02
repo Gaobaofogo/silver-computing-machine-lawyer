@@ -24,7 +24,7 @@
 
 O domínio do projeto segue o vocabulário definido em `judis-advocacia/GLOSSARY.md`:
 
-- **Cliente**: parte autora do processo (pessoa física ou jurídica).
+- **Cliente**: parte autora do processo. Per ADR-0001: **sempre pessoa física** (`Cpf` obrigatório, `EstadoCivil` obrigatório, `CNPJ` removido do cadastro). `Reclamado` pode ser pessoa física (`Cpf`) ou pessoa jurídica (`CNPJ`).
 - **Reclamado**: parte ré do processo (pessoa física ou jurídica).
 - **Processo**: registro judicial com número, data de autuação, valor da causa, área, rito.
 - **Área**: especialidade do direito do processo (ex.: Trabalhista, Cível, Previdenciário).
@@ -80,6 +80,18 @@ Essas são as skills base, extraídas do repositório `mattpocock/skills`. Elas 
 - `python-testing-patterns` — testes com pytest (AAA, fixtures, mocking, TDD, propriedade, CI/CD).
 - `docker-project-foundations` — Dockerização de projeto (Dockerfile, compose.yaml, .dockerignore).
 - `docker-best-practices` — boas práticas de Docker.
+
+### Issue tracker
+
+GitHub Issues no repositório `Gaobaofogo/silver-computing-machine-lawyer`. Veja `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Cinco rótulos canônicos (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`). Veja `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context (um `GLOSSARY.md` + `docs/adr/` na raiz). Veja `docs/agents/domain.md`.
 
 ---
 
@@ -139,6 +151,56 @@ Fluxo típico:
 - `judis-advocacia/estrutura-pastas.md` — estrutura de pastas (`apps/` + `wayfinder/`).
 
 Não existe `GLOSSARY-MAP.md`; este é um repositório **single-context**. Se futuramente o projeto crescer para múltiplos contextos (ex.: contexto jurídico, contexto administrativo), crie `GLOSSARY-MAP.md` apontando para cada `GLOSSARY.md` específico.
+
+---
+
+## Modelagem e Documentação
+
+Este repositório utiliza **templates de modelagem** para produzir definições de negócio consistentes e reutilizáveis. O principal template é o **UML Template** em `templates/uml-template.md`.
+
+### Uso do UML Template
+
+1. **Copiar**: `cp templates/uml-template.md modelos/<sistema>-uml.md`
+2. **Personalizar**: substituir marcadores (`{Sistema}`, `{sistemaCore}`) e nomes de classes (`{RaizA}`, `{EntidadeA1}`) pelos nomes reais do domínio jurídico.
+3. **Preencher**: substituir cada bloco `[...]` pelo conteúdo real e apagar a orientação.
+4. **Seções opcionais**: as marcadas como (opcional) podem ser removidas; renumerar seções subsequentes e referências cruzadas.
+5. **Checklist**: antes de publicar, percorrer o checklist no final do arquivo e apagar.
+
+O modelo produz **definições UML completas** para cada sistema jurídico:
+
+- **Conceitos de domínio**: Entidades (`Cliente`, `Processo`, `Reclamado`, etc.) e Agregados (`CadastroProcesso`, `MovimentoProcessual`)
+- **Value Objects**: como `NumeroProcesso`, `Cpf`, `Cnpj` e outros tipos de dados jurídicos
+- **Associações**: com multiplicidades (`1` → `0..*`, `0..*` → `1`) e regras de cardinalidade
+- **MÁquinas de estado**: para fluxos de processo como `EstadoProcesso`, `StatusAndamento`
+- **Regras de negócio**: invariantes e condições obrigatórias condicionais
+
+#### Fluxo de trabalho com o template
+
+Use estas skills para construir sistemas a partir do template:
+
+- **`grill-with-docs`**: entrevista para acostar o template no contexto jurídico
+- **`domain-modeling`**: construir o modelo de domínio (glossário + ADRs) usando o template como base
+- **`to-spec`**: sintetizar a entrevista em um spec que referencia o `modelo/<sistema>-uml.md`
+- **`to-tickets`**: dividir o spec em tickets verticais; cada ticket declara suas bordas (ex.: "Definir atributo `cpf` de Cliente")
+- **`implement`**/**`implement-spec`**: preencher o template com testes e código (usando `tdd` nos seams)
+
+#### Como usar a pasta `modelos/`
+
+- `modelos/` contém **templates de documentos de negócio** que descrevem o modelo de domínio
+- `direito-projeto/` contém **artefatos de implementação** (código, testes)
+- `judis-advocacia/` contém **material de referência** (GLOSSARY.md, ADRs)
+
+#### Contexto de negócio ↔ UML
+
+Cada arquivo UML gerado se torna um **contexto de negócio** em execução:
+
+1. **Raiz de agregado** → entidade `Customer` / `Processo`
+2. **Entidades** → tabelas `processo`, `cliente`, `reclamado`
+3. **Value Objects** → campos complexos (ex.: `cpf`, `endereco`, `movimentos`)
+4. **Associações** → relações `Foreign Key` / relacionamentos `One-to-Many`
+5. **MÁquinas de estado** → colunas `status` com restrições `CHECK`
+
+Todos os atributos modelados no UML viram **colunas na tabela** (UUID, String, Integer, Currency, Date, DateTime) com as mesmas obrigatórias (`1`) e opcionais (`[0..1]`) que o template define.
 
 ---
 

@@ -172,6 +172,7 @@ backups/
 *.accdr
 *.accde
 *.mdbx
+postgres_data/
 
 # SQLite (used in tests / local dev)
 *.db
