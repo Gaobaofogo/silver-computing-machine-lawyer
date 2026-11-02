@@ -222,6 +222,7 @@ Referencia: `react-patterns`, `baseline-ui` (feedback patterns).
 ## 6. Padroes de Formulario (LGPD + Dados Sensiveis)
 
 - **Campos obrigatorios**: `required` + `aria-required="true"`.
+- **Regex de validacao no input** (`CPF`): pattern `^(\d{3}\.\d{3}\.\d{3}-\d{2})$`; `CNPJ` (quando PJ): `^[A-Z0-9]{2}\.[A-Z0-9]{3}\.[A-Z0-9]{3}/[A-Z0-9]{4}-\d{2}$`; nunca permitir valores fora do pattern.
 - **Mascaras**: CPF, CNPJ, telefone — nunca mostrar dados brutos sem mascara.
 - **Confirmacoes**: ao salvar `Cliente`, confirmar que `EstadoCivil` e `CPF` foram preenchidos (ADR-0001).
 - **Mensagens de erro**: usar termos do glossario (ex.: "CPF do Cliente e obrigatorio" nao "Campo CPF invalid.").

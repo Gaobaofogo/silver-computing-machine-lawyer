@@ -132,6 +132,8 @@ Objetivo: evitar `if`s de regra de negocio dentro da funcao da rota.
 
 ```python
 # Schema (validacao de ENTRADA — Pydantic automatico)
+# Pattern regex obrigatorio para CPF (ADR-0001): ^(\d{3}\.\d{3}\.\d{3}-\d{2})$
+# CNPJ (quando aplicável a Reclamado PJ): ^[A-Z0-9]{2}\.[A-Z0-9]{3}\.[A-Z0-9]{3}/[A-Z0-9]{4}-\d{2}$
 class ClienteSchema(BaseModel):
     cpf: str = Field(..., min_length=11, max_length=11)
     nome: str
