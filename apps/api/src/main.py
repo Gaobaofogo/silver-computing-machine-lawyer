@@ -11,6 +11,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from apps.api.src.schemas.cliente import ClienteSchema
+
+@app.post("/clientes")
+def criar_cliente(cliente: ClienteSchema):
+    return{"status":"criado","cliente":cliente.model_dump()}
+
 @app.get("/health")
 def health():
     return {"status": "ok", "project": "judis-advocacia"}
