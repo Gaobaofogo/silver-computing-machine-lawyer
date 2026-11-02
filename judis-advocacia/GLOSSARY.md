@@ -1,4 +1,4 @@
-# Modelo Geral do Domínio — JudisAdvocacia — Gestão de Processos Jurídicos
+# Modelo Geral do Domínio — JudisAdvocacia — Gerenciador de Processos Jurídicos
 
 ## 1. Objetivo
 
