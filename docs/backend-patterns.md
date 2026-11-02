@@ -103,6 +103,18 @@ Nota: `auth_verify` nao esta definido neste documento — e um pointer para impl
 
 ---
 
+### 3.4.1 JWT Bearer Token (Padrao de Autenticacao)
+
+Referencia: `fastapi`, `fastapi-python` (Pydantic v2, JWT dependencias), `python-type-safety`.
+
+- **Token**: `JWT` com `Bearer` enviado no header `Authorization: Bearer <token>`.
+- **Expiracao**: `exp` = 8 horas (ou conforme ADR futuro).
+- **Payload**: `{ "sub": "advogado_123", "role": "advogado", "iss": "judis-jmd" }`; `role` usado para autorizacao (ADR-0001 contexto: Cliente = PF; Reclamado = PF/PJ).
+- **Refresh**: token rotativo (refresh token armazenado em `httpOnly` cookie, nunca no frontend `localStorage`).
+- **Revisao**: nao expor `CPF` ou `Observacoes` no payload JWT (LGPD); apenas identificadores internos (`sub`, `role`).
+
+---
+
 ## 4. Separacao de Validacao (Router Fino — Padrao FastAPI)
 
 Referencia: `fastapi`, `python-patterns` (guard clauses, composicao).
