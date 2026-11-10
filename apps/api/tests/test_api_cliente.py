@@ -1,6 +1,16 @@
 from fastapi.testclient import TestClient
 from apps.api.src.main import app
+from apps.api.tests._auth_stub import enable_admin_override, disable_admin_override
+import pytest
+from apps.api.src.auth.dependencies import current_user
 
+
+
+@pytest.fixture(autouse=True)
+def _admin_auth():
+    enable_admin_override()
+    yield
+    disable_admin_override()
 
 def cliente_json_valido():
     return {
@@ -26,7 +36,7 @@ class TestAPICliente:
         assert resp.status_code == 201
         body = resp.json()
         assert body["status"] == "criado"
-        assert "***" in body["cliente"]["cpf"]
+        assert body["cliente"]["cpf"] == "411.133.456-70"
 
     def test_post_rejeita_estado_civil_invalido(self):
         """Seam: POST rejeita EstadoCivil fora do dominio."""

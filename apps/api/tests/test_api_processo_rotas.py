@@ -3,6 +3,7 @@ from uuid import uuid4
 import pytest
 from fastapi.testclient import TestClient
 from apps.api.src.main import app
+from apps.api.src.auth.dependencies import current_user
 from apps.api.src.infra import database
 from sqlalchemy.pool import StaticPool
 from sqlmodel import Session, create_engine
@@ -35,6 +36,7 @@ def client():
             yield session
 
     app.dependency_overrides[database.get_db] = override_db
+    app.dependency_overrides[current_user] = lambda: {"user_id": "00000000-0000-0000-0000-000000000000", "login": "admin@test", "nome": "Administrador", "role": "admin"}
     try:
         yield TestClient(app)
     finally:

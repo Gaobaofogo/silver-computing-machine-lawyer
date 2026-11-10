@@ -27,13 +27,13 @@ engine = create_engine(
 
 def init_db() -> None:
     """Cria todas as tabelas registradas nos modelos SQLModel."""
-    from apps.api.src.models import cliente, processo, reclamado  # noqa: F401
+    from apps.api.src.models import auth, cliente, processo, reclamado  # noqa: F401
 
     SQLModel.metadata.create_all(engine)
 
 
 def drop_db() -> None:
-    from apps.api.src.models import cliente, processo, reclamado  # noqa: F401
+    from apps.api.src.models import auth, cliente, processo, reclamado  # noqa: F401
 
     SQLModel.metadata.drop_all(engine)
 
@@ -180,6 +180,191 @@ def movimento_to_dict(row) -> dict:
         "descricao": row.descricao,
         "status_anterior": status_a_val,
         "status_novo": status_val,
+        "created_at": row.created_at.isoformat() if row.created_at else None,
+        "updated_at": row.updated_at.isoformat() if row.updated_at else None,
+    }
+
+
+
+
+def _endereco_to_dict(endereco) -> dict | None:
+    if endereco is None:
+        return None
+    if isinstance(endereco, dict):
+        data = dict(endereco)
+    else:
+        data = endereco.model_dump(mode="json") if hasattr(endereco, "model_dump") else dict(endereco)
+    uf = data.get("uf")
+    if hasattr(uf, "value"):
+        data["uf"] = uf.value
+    return data
+
+
+def _endereco_for_payload(payload_endereco) -> dict:
+    return _endereco_to_dict(payload_endereco)
+
+# ------------------------------------------------------------------
+# Cliente helpers
+# ------------------------------------------------------------------
+def create_cliente(session, payload):
+    from apps.api.src.models.cliente import Cliente
+    row = Cliente(
+        nome_completo=payload.nome_completo,
+        cpf=payload.cpf,
+        telefone=payload.telefone,
+        email=payload.email,
+        endereco=_endereco_for_payload(payload.endereco),
+        estado_civil=payload.estado_civil,
+        status=payload.status,
+        observacao=payload.observacao,
+    )
+    session.add(row)
+    session.commit()
+    session.refresh(row)
+    return row
+
+
+def get_cliente(session, cliente_id):
+    from apps.api.src.models.cliente import Cliente
+    from uuid import UUID
+    try:
+        cid = UUID(str(cliente_id))
+    except ValueError:
+        return None
+    return session.get(Cliente, cid)
+
+
+def update_cliente(session, cliente_id, payload):
+    from apps.api.src.models.cliente import Cliente
+    from uuid import UUID
+    try:
+        cid = UUID(str(cliente_id))
+    except ValueError:
+        return None
+    row = session.get(Cliente, cid)
+    if row is None:
+        return None
+    row.nome_completo = payload.nome_completo
+    row.cpf = payload.cpf
+    row.telefone = payload.telefone
+    row.email = payload.email
+    row.endereco = _endereco_for_payload(payload.endereco)
+    row.estado_civil = payload.estado_civil
+    row.status = payload.status
+    row.observacao = payload.observacao
+    row.updated_at = datetime.now().astimezone()
+    session.add(row)
+    session.commit()
+    session.refresh(row)
+    return row
+
+
+def delete_cliente(session, cliente_id) -> bool:
+    from apps.api.src.models.cliente import Cliente
+    from uuid import UUID
+    try:
+        cid = UUID(str(cliente_id))
+    except ValueError:
+        return False
+    row = session.get(Cliente, cid)
+    if row is None:
+        return False
+    session.delete(row)
+    session.commit()
+    return True
+
+
+def cliente_to_dict(row) -> dict:
+    endereco_dict = _endereco_to_dict(row.endereco)
+    return {
+        "cliente_id": str(row.cliente_id),
+        "nome_completo": row.nome_completo,
+        "cpf": row.cpf,
+        "telefone": row.telefone,
+        "email": row.email,
+        "endereco": endereco_dict,
+        "estado_civil": row.estado_civil.value if hasattr(row.estado_civil, "value") else str(row.estado_civil),
+        "status": row.status.value if hasattr(row.status, "value") else str(row.status),
+        "observacao": row.observacao,
+        "created_at": row.created_at.isoformat() if row.created_at else None,
+        "updated_at": row.updated_at.isoformat() if row.updated_at else None,
+    }
+
+
+# ------------------------------------------------------------------
+# Reclamado helpers
+# ------------------------------------------------------------------
+def create_reclamado(session, payload):
+    from apps.api.src.models.reclamado import Reclamado
+    row = Reclamado(
+        tipo=payload.tipo,
+        cpf=payload.cpf,
+        cnpj=payload.cnpj,
+        razao=payload.razao,
+        endereco=_endereco_for_payload(payload.endereco),
+    )
+    session.add(row)
+    session.commit()
+    session.refresh(row)
+    return row
+
+
+def get_reclamado(session, reclamado_id):
+    from apps.api.src.models.reclamado import Reclamado
+    from uuid import UUID
+    try:
+        rid = UUID(str(reclamado_id))
+    except ValueError:
+        return None
+    return session.get(Reclamado, rid)
+
+
+def update_reclamado(session, reclamado_id, payload):
+    from apps.api.src.models.reclamado import Reclamado
+    from uuid import UUID
+    try:
+        rid = UUID(str(reclamado_id))
+    except ValueError:
+        return None
+    row = session.get(Reclamado, rid)
+    if row is None:
+        return None
+    row.tipo = payload.tipo
+    row.cpf = payload.cpf
+    row.cnpj = payload.cnpj
+    row.razao = payload.razao
+    row.endereco = _endereco_for_payload(payload.endereco)
+    row.updated_at = datetime.now().astimezone()
+    session.add(row)
+    session.commit()
+    session.refresh(row)
+    return row
+
+
+def delete_reclamado(session, reclamado_id) -> bool:
+    from apps.api.src.models.reclamado import Reclamado
+    from uuid import UUID
+    try:
+        rid = UUID(str(reclamado_id))
+    except ValueError:
+        return False
+    row = session.get(Reclamado, rid)
+    if row is None:
+        return False
+    session.delete(row)
+    session.commit()
+    return True
+
+
+def reclamado_to_dict(row) -> dict:
+    endereco_dict = _endereco_to_dict(row.endereco)
+    return {
+        "reclamado_id": str(row.reclamado_id),
+        "tipo": row.tipo,
+        "cpf": row.cpf,
+        "cnpj": row.cnpj,
+        "razao": row.razao,
+        "endereco": endereco_dict,
         "created_at": row.created_at.isoformat() if row.created_at else None,
         "updated_at": row.updated_at.isoformat() if row.updated_at else None,
     }
