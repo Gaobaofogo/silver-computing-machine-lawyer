@@ -1,6 +1,8 @@
 # Padrões Técnicos — Frontend (UI/UX + Fluxos)
 
-Referencia: `GLOSSARY.md` (Cliente = pessoa fisica, Reclamado = PF/PJ, Processo com IdProcesso/DataAutua/ValorCausa/IdArea/IdRito), `AGENTS.md` (ADR-0001: Cliente sempre PF, CPF/EstadoCivil obrigatorios, CNPJ removido), `frontend-skills/baseline-ui`, `frontend-skills/react-patterns`.
+> **Referência apenas de padrões, NÃO definidores de entidades.** Todas as informações sobre campos, estrutura de entidades e regras de domínio estão em `judis-advocacia/GLOSSARY.md`. Neste documento, existem apenas padrões de UI/UX (formulários, navegacão, acessibilidade). Nunca ultrapasse os limites do glossário para definições de modelos.
+
+Referencia: `GLOSSARY.md`, `AGENTS.md` (ADR-0001), `frontend-skills/baseline-ui`, `frontend-skills/react-patterns`.
 
 ---
 
@@ -27,18 +29,13 @@ O código técnico (funções, componentes, módulos) é escrito em **inglês**;
 
 ---
 
-## 2. Vocabulário do Dominio (referencia obrigatoria)
+## 2. Referência única de entidades e campos (NÃO DUPLICAR)
 
-Usar os termos do `GLOSSARY.md` em todos os componentes, rotulos e mensagens:
-
-| Termo | Definicao no doc | Regra de UI |
-|-------|------------------|-------------|
-| **Cliente** | Pessoa fisica, autor do processo. Sempre `Cpf` + `EstadoCivil`. | Campo `CPF` obrigatorio, campo `EstadoCivil` obrigatorio. Nenhum campo `CNPJ`. |
-| **Reclamado** | Parte re. Pode ser PF (`Cpf`) ou PJ (`CNPJ`). | Campo `Tipo` (PF/PJ) selecionavel; condicionalmente mostra CPF ou CNPJ. |
-| **Processo** | Registro judicial (IdProcesso, DataAutua, ValorCausa, IdArea, IdRito, IdReclamado, Observa). | Tela de detalhe mostra todos os campos; `Observa` pode conter dados sensiveis (LGPD). |
-| **Area Juridica** | Especialidade (Trabalhista, Civil, Previdenciario, etc.). | Dropdown com nomes do glossario. |
-| **Rito** | Ordinario, Sumario, Especial. | Dropdown. |
-| **Dados Sensiveis** | CPF, RG, CTPS, PIS/PASEP (LGPD). | Sempre mascarados na exibe; input com `type="password"` ou mascara visual; alertas de privacidade. |
+> **REGRA PARA AGENTES:** Todas as informações sobre entidades (`Cliente`, `Reclamado`, `Processo`, etc.), seus campos, enums (`EstadoCivil`, `Area`, `Rito`, `StatusProcesso`, etc.), value objects (`Cpf`, `ValorCausa`, etc.) e invariantes de domínio estão **apenas** em `judis-advocacia/GLOSSARY.md`. Este documento (frontend-patterns.md) é guia de padrões de UI/UX — **não contém definição de campos nem regras de negócio**.
+>
+> Quando precisar de qualquer campo, atributo, regra de obrigatoriedade, enumeração ou estrutura de entidade, **consulte apenas `judis-advocacia/GLOSSARY.md`**. Não insira informações de definição de entidades neste arquivo nem em nenhum outro documento além do glossário.
+>
+> `GLOSSARY.md` é a fonte única de verdade para o modelo de domínio deste projeto (single-context, conforme `AGENTS.md`).
 
 ---
 
@@ -103,18 +100,6 @@ Nota: `frontend-skills/react-patterns` trata Server/Client Components; nao trata
 
 ---
 
-## 2.5 Entidade Cliente (domínio) vs Componente CadastroCliente (UI)
-
-Referencia: `GLOSSARY.md` (Cliente = PF sempre, `CPF` obrigatório, `EstadoCivil`, `Observacoes` LGPD, `ADR-0001`); `AGENTS.md`.
-
-- **Entidade `Cliente` (domínio, não componente)**: `nome` (str), `cpf` (str, regex `^(\d{3}\.\d{3}\.\d{3}-\d{2})$`), `estado_civil` (str, enum: Solteiro / Casado / Divorciado / Viúvo), `observacoes` (str, opcional, LGPD sensível, não expor em log/retorno sem máscara). Sempre PF (`CNPJ` removido).
-- **Componente `CadastroCliente`**: componente React que implementa a entrada da entidade `Cliente`. Nome do arquivo técnico em inglês (`ClientForm.tsx` ou `CadastroCliente.tsx` conforme convenção). O componente referencia a entidade, não substitui.
-- **Regra para agentes**: ao implementar `Cliente`, use a entidade `ClienteSchema` / `Cliente` (backend) e o componente `CadastroCliente` (frontend) como formulários separados; não confundir os nomes.
-- **Enums obrigatórios para `EstadoCivil`**: `Solteiro`, `Casado`, `Divorciado`, `Viúvo`.
-- **Campo `Observacoes`** (`Observa`): campo livre associado; deve ser tratado com cautela LGPD; mascarar/ocultar em logs e respostas públicas.
-
----
-
 ## 3. Design Tokens e Padroes Visuais
 
 Baseado em `baseline-ui`; nao inventar paleta nova sem decisao de ADR.
@@ -128,35 +113,36 @@ Baseado em `baseline-ui`; nao inventar paleta nova sem decisao de ADR.
 
 ## 4. Componentes de UI (mapeados ao dominio)
 
-### 4.1 Formulario de Cliente (PF obrigatorio)
+### 4.1 Formulario de Cliente (PF obrigatorio) — campos conforme `GLOSSARY.md`
 
 ```tsx
 // Componente: CadastroCliente
-// Regra: Cliente = sempre PF per ADR-0001
-// Campos: Nome, CPF (mascarado), EstadoCivil (select), Observacoes (textarea, LGPD)
-// Nenhum campo CNPJ
+// Regra: Cliente = sempre PF per ADR-0001 (consultar GLOSSARY.md)
+// Campos: consultar GLOSSARY.md §4.2 — CadastroCliente (nome, cpf, estadoCivil, endereco, observacao, etc.)
+// Nenhum campo CNPJ — regra no glossário
 ```
 
 - **CPF**: input com mascara `000.000.000-00`; validacao de digito verificador; label com informacao LGPD.
 - **EstadoCivil**: select (Solteiro, Casado, Divorciado, Viuvio, etc.) — termos do glossario.
 - **Observacoes**: textarea; se conter dados sensiveis, mostrar badge "Dados sensiveis — LGPD".
 
-### 4.2 Formulario de Reclamado (PF ou PJ)
+### 4.2 Formulario de Reclamado (PF ou PJ) — campos conforme `GLOSSARY.md`
 
 ```tsx
 // Componente: CadastroReclamado
-// Regra: Reclamado pode ser PF (Cpf) ou PJ (CNPJ)
-// Campos: Tipo (radio/select), Nome, CPF ou CNPJ condicional, Observacoes
+// Regra: Reclamado pode ser PF (Cpf) ou PJ (CNPJ) — consultar GLOSSARY.md §2.2, §4.2
+// Campos: consultar GLOSSARY.md (nome, cpf/cnpj, tipo PF/PJ, observacoes, etc.)
 ```
 
 - **Tipo**: `PF` ou `PJ`; muda o campo de identificacao.
 - **Validador**: CPF valida com digito; CNPJ valida com digito.
 
-### 4.3 Tela de Processo (detalhe)
+### 4.3 Tela de Processo (detalhe) — campos conforme `GLOSSARY.md`
 
 ```tsx
 // Componente: ProcessoDetalhe
-// Campos: IdProcesso (readonly), DataAutua, ValorCausa (currency), Area (select), Rito (select), Reclamado (link/readonly), Observacoes
+// Campos: consultar GLOSSARY.md §4.1 (processoId, numeroProcesso, dataAutuacao, valorCausa,
+//         idArea, idRito, idCliente, idReclamado, status, observacao, etc.)
 ```
 
 - `ValorCausa`: input com mascara monetaria (ex.: `R$ 10.000,00`).

@@ -1,6 +1,8 @@
 # Padrões Técnicos — Backend (Arquitetura + API + Testes)
 
-Referencia: `GLOSSARY.md`, `AGENTS.md` (ADR-0001: Cliente = PF, CPF/EstadoCivil obrigatorios, CNPJ removido), `skills/repo` (`fastapi`, `python-type-safety`, `tdd`, `python-testing-patterns`, `docker-best-practices`).
+> **Referência apenas de padrões técnicos, NÃO definidores de entidades.** Todas as informações sobre campos, estrutura de entidades, enums e regras de domínio estão **apenas** em `judis-advocacia/GLOSSARY.md`. Neste documento existem apenas padrões de engenharia (FastAPI, SQLModel, testes, Docker). Nunca insira definições de modelos aqui — consulte sempre o glossário.
+
+Referencia: `GLOSSARY.md`, `AGENTS.md`, `skills/repo` (`fastapi`, `python-type-safety`, `tdd`, etc.).
 
 ---
 
@@ -23,18 +25,13 @@ O código técnico é escrito em **inglês**; os nomes de domínio permanecem em
 
 ---
 
-## 2. Vocabulário do Dominio (obrigatorio)
+## 2. Referência única de entidades e campos (NÃO DUPLICAR)
 
-Usar os termos do glossario em todos os nomes de endpoints, schemas, tabelas e testes:
-
-| Entidade | Regra de modelagem (ADR-0001 + GLOSSARY) |
-|----------|------------------------------------------|
-| **Cliente** | Sempre `pessoa_fisica`. `cpf`: obrigatorio, `estado_civil`: obrigatorio. `cnpj`: removido do cadastro. |
-| **Reclamado** | Pode ser `pessoa_fisica` (`cpf`) ou `pessoa_juridica` (`cnpj`). |
-| **Processo** | `id_processo`, `data_autuacao`, `valor_causa`, `id_area`, `id_rito`, `id_reclamado`, `observacoes`. |
-| **Area Juridica** | Tabela de referencia: Trabalhista, Civil, Previdenciario, etc. |
-| **Rito** | Tabela de referencia: Ordinario, Sumario, Especial. |
-| **Dados Sensivesis** | CPF/CPF sao dados sensiveis (LGPD). Nenhum log deve expor CPF completo. |
+> **REGRA PARA AGENTES:** Todas as informações sobre entidades (`Cliente`, `Reclamado`, `Processo`, etc.), seus campos, enums (`EstadoCivil`, `Area`, `Rito`, `StatusProcesso`, etc.), value objects (`Cpf`, `ValorCausa`, etc.) e invariantes de domínio estão **apenas** em `judis-advocacia/GLOSSARY.md`. Este documento (backend-patterns.md) é guia de padrões técnicos — **não contém definição de campos nem regras de negócio**.
+>
+> Quando precisar de qualquer campo, atributo, regra de obrigatoriedade, enumeração ou estrutura de entidade, **consulte apenas `judis-advocacia/GLOSSARY.md`**. Não insira informações de definição de entidades neste arquivo nem em nenhum outro documento além do glossário.
+>
+> `GLOSSARY.md` é a fonte única de verdade para o modelo de domínio deste projeto (single-context, conforme `AGENTS.md`).
 
 ---
 
@@ -77,18 +74,7 @@ Implementacao: criar `utils/lgpd_mask.py` com `mask_cpf()`, `mask_cnpj()`, `mask
 
 ---
 
-## 2.6 Entidade Cliente — referencia completa (ADR-0001 + GLOSSARY.md)
-
-Referencia: `GLOSSARY.md` (linha 5: Cliente = PF; linha 15: EstadoCivil; linha 21: Observacoes; linha 19: CPF/CNPJ LGPD), `ADR-0001`.
-
-- **Campos obrigatorios**: `nome` (str); `cpf` (str, regex `^(\d{3}\.\d{3}\.\d{3}-\d{2})$`, LGPD sensível, mascarado no retorno); `estado_civil` (str, enum: Solteiro / Casado / Divorciado / Viúvo).
-- **Campo opcional LGPD**: `observacoes` (`Observa`) — campo livre associado a Cliente; sensível; mascarar em log/erro; nao expor sem mascara.
-- **Removido**: `cnpj` nao existe em `Cliente` (`extra="forbid"` no `ClienteSchema`).
-- **Distincao**: `Cliente` (entidade de domínio) vs `CadastroCliente` (componente/formulário de entrada); nao confundir nomes em tickets ou specs.
-
----
-
-## 3.4 Auth/Access-Control Seam
+## 4. Separacao de Validacao
 
 Referencia: `fastapi`, `fastapi-python`, `python-patterns` (guard clauses).
 
@@ -114,7 +100,7 @@ Nota: `auth_verify` nao esta definido neste documento — e um pointer para impl
 
 ---
 
-### 3.4.1 JWT Bearer Token (Padrao de Autenticacao)
+### 4.1 Auth/Access-Control Seam — JWT Bearer Token (Padrao de Autenticacao)
 
 Referencia: `fastapi`, `fastapi-python` (Pydantic v2, JWT dependencias), `python-type-safety`.
 
@@ -126,7 +112,7 @@ Referencia: `fastapi`, `fastapi-python` (Pydantic v2, JWT dependencias), `python
 
 ---
 
-## 4. Separacao de Validacao (Router Fino — Padrao FastAPI)
+## 5. Separacao de Validacao (Router Fino — Padrao FastAPI)
 
 Referencia: `fastapi`, `python-patterns` (guard clauses, composicao).
 Objetivo: evitar `if`s de regra de negocio dentro da funcao da rota.
@@ -175,52 +161,25 @@ def criar_cliente(
 
 ---
 
-## 4. Regas de Negocio (Invariantes)
+## 6. Referência de invariantes (CONSULTAR APENAS `GLOSSARY.md`)
 
-A partir do glossario e ADR-0001:
-
-| Regra | Implementacao |
-|-------|---------------|
-| Cliente sempre PF | `model_config` ou `guard clause`: se `tipo == "pj"` → rejeitar. `cnpj` removido do schema. |
-| CPF obrigatorio | Schema Pydantic: `cpf: str = Field(..., min_length=11, max_length=11)` + validador de digito. |
-| EstadoCivil obrigatorio | Schema: `estado_civil: EstadoCivilEnum` (nao opcional). |
-| Reclamado pode ser PF/PJ | Schema: `tipo: Literal["pf","pj"]`; `cpf` se `pf`; `cnpj` se `pj`; validacao condicional. |
-| Observacoes sensiveis | Campo `observacoes: str = Field(...)`; no servico, nao logar valor em logs de acesso; usar `mask_observacoes()` se necessario para exibicao. |
-| LGPD | Nenhum endpoint retorna CPF completo sem autorizacao; retorno de lista deve mascarar CPF (`***.***.***-**`). |
+> **NÃO DUPLICAR AQUI:** As invariantes (`Cliente = PF`, `CPF obrigatório`, `EstadoCivil obrigatório`, `Reclamado = PF/PJ`, `ValorCausa`, `Observacoes` LGPD, etc.) estão definidas apenas em `judis-advocacia/GLOSSARY.md`. Este arquivo não contém definições de regra de negócio.
+>
+> Consultar `GLOSSARY.md` (seção 7 — Regras dos agregados) para invariantes completas.
 
 ---
 
-## 5. Modelagem (SQLModel / SQLAlchemy 2.0)
+## 7. Referência de modelagem (CONSULTAR APENAS `GLOSSARY.md`)
 
-```python
-# Exemplo de padrao de modelagem (referencia, nao codigo completo)
-class Cliente(SQLModel, table=True):
-    id: int | None = Field(default=None, primary_key=True)
-    cpf: str = Field(index=True, unique=True)  # obrigatorio
-    nome: str
-    estado_civil: str  # obrigatorio
-    # CNPJ removido (ADR-0001)
-
-class Reclamado(SQLModel, table=True):
-    id: int | None = Field(default=None, primary_key=True)
-    tipo: Literal["pf", "pj"]
-    cpf: str | None = None   # se pf
-    cnpj: str | None = None  # se pj
-    nome: str
-
-class Processo(SQLModel, table=True):
-    id_processo: int | None = Field(default=None, primary_key=True)
-    data_autuacao: date
-    valor_causa: Decimal
-    id_area: int  # FK Area
-    id_rito: int  # FK Rito
-    id_reclamado: int  # FK Reclamado
-    observacoes: str | None
-```
+> **NÃO DUPLICAR AQUI:** A estrutura das tabelas (`Cliente`, `Reclamado`, `Processo`, `MovimentoProcessual`, etc.), os tipos (`String`, `money`, `UUID`, `DateTime`), multiplicidades (`1`, `0..1`, `1..*`) e associações estão apenas no glossário.
+>
+> Consultar `GLOSSARY.md` (seções 2, 4 — Entidades, Value Objects, Agregados, Diagramas UML) para a definição completa do modelo.
+>
+> Implementação técnica (SQLModel / SQLAlchemy): consultar `python-patterns` + `fastapi-python` skills; a definição dos campos vem do glossário, nunca deste arquivo.
 
 ---
 
-## 6. Padroes de Teste (pytest / TDD)
+## 8. Padroes de Teste (pytest / TDD)
 
 Baseado em `python-testing-patterns` e `tdd`.
 
@@ -259,7 +218,7 @@ def test_observacoes_nao_expostas_em_log():
 
 ---
 
-## 6.4 Fixture Location
+## 8.4 Fixture Location
 
 Referencia: `python-testing-patterns`, `tdd`.
 
@@ -276,7 +235,7 @@ Regra de convivencia: um `conftest.py` por modulo (ou `tests/common/`) Shared fi
 
 ---
 
-## 7. Docker / Infra (referencia rapida)
+## 9. Docker / Infra (referencia rapida)
 
 Referencia `docker-project-foundations` + `docker-best-practices`.
 
@@ -286,7 +245,7 @@ Referencia `docker-project-foundations` + `docker-best-practices`.
 
 ---
 
-## 8. Padroes de Qualidade (code-review)
+## 10. Padroes de Qualidade (code-review)
 
 Quando implementar, usar `/tdd` + `/code-review` com dois eixos:
 - **Padroes**: segue `python-patterns` (PEP 8, guard clauses, composicao)?
@@ -294,7 +253,7 @@ Quando implementar, usar `/tdd` + `/code-review` com dois eixos:
 
 ---
 
-## 9. Referencias de Documentos
+## 11. Referencias de Documentos
 
 - `docs/agents/domain.md` — como ler o glossario
 - `docs/agents/issue-tracker.md` — onde publicar specs (GitHub)
@@ -303,7 +262,7 @@ Quando implementar, usar `/tdd` + `/code-review` com dois eixos:
 
 ---
 
-## 10. Out of Scope
+## 12. Out of Scope
 
 - Implementacao completa (este doc e referencia).
 - Decisoes de UI que nao afetam backend (ex.: cores — ver `frontend-patterns.md`).

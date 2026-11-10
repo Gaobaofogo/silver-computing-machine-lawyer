@@ -2,7 +2,7 @@
 
 ## Entidades do domínio
 
-- **Cliente**: pessoa física ou jurídica que contrata os serviços do escritório de advocacia e é representada em um ou mais processos. Não confundir com "lead" (potencial cliente antes da contratação) nem com "parte" no sentido estritamente processual.
+- **Cliente**: pessoa física (PF) que contrata os serviços do escritório de advocacia e é representada em um ou mais processos. **ADR-0001**: Cliente é sempre PF (`Cpf` obrigatório, `EstadoCivil` obrigatório, `CNPJ` removido). Não confundir com "lead" (potencial cliente antes da contratação) nem com "parte" no sentido estritamente processual.
 
 - **Reclamado**: parte contrária em um processo, também chamada de "parte adversa" ou "oponente" em documentos processuais. Corresponde ao campo `Reclamado` no sistema legado.
 
