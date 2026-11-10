@@ -117,3 +117,21 @@ class TestLGPDAuditMiddleware:
             rows = s.exec(select(LogsAcesso)).all()
             assert len(rows) >= 1
             assert all(r.path and r.role and r.op for r in rows)
+
+class TestAdminAuditLogs:
+    def test_admin_pode_consultar_logs_acesso(self, client):
+        token = _login_as(client, LOGIN)
+        client.cookies.set("access_token", token)
+        # gerar um acesso (GET /processos/{id} inexistente — vai 404 mesmo)
+        r = client.get("/processos/00000000-0000-0000-0000-000000000000")
+        assert r.status_code in (200, 404)
+        r = client.get("/admin/logs_acesso")
+        assert r.status_code == 200
+        data = r.json()
+        assert "logs" in data
+        # ao menos um log de /processos foi registrado
+        assert any(l.get("path", "").startswith("/processos") for l in data["logs"])
+        # pseudonimizacao: nenhum log expõe corpo / CPF
+        for l in data["logs"]:
+            assert "cpf" not in str(l).lower()
+            assert l.get("ip") or l.get("user_id")

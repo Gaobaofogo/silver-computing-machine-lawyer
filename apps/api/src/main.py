@@ -213,3 +213,24 @@ def me(request: Request, db: Session = Depends(get_db)):
 @app.get("/health")
 def health():
     return {"status": "ok", "project": "judis-advocacia"}
+
+
+@app.get("/admin/logs_acesso", dependencies=[Depends(require_role("admin"))])
+def admin_logs_acesso(db: Session = Depends(get_db)):
+    """LogsAcesso — somente Administrador (ADR-0007)."""
+    from sqlmodel import select
+    from apps.api.src.models.audit import LogsAcesso
+    rows = list(db.exec(select(LogsAcesso).order_by(LogsAcesso.ts.desc())))
+    logs = [
+        {
+            "ts": r.ts.isoformat() if r.ts else None,
+            "ip": r.ip,
+            "user_id": str(r.user_id) if r.user_id else None,
+            "role": r.role,
+            "op": r.op,
+            "path": r.path,
+            "status_code": r.status_code,
+        }
+        for r in rows
+    ]
+    return {"status": "ok", "logs": logs}
